@@ -32,7 +32,6 @@ Vagrant.configure("2") do |config|
             vb.memory = boxconfig[:memory]
             vb.cpus = boxconfig[:cpus] 	        
           end
-          #box.vm.provision "shell", path: boxconfig[:script] echo -e "n\ny\n" | ipa-server-install --mkhomedir -r OTUS.LAN -n otus.lan --hostname=ipa.otus.lan --admin-password=vagrant_123 --ds-password=vagrant_123 --netbios-name=OTUS --no-ntp
       end
   end
 end
