@@ -1,0 +1,95 @@
+- name: Base set up
+  hosts: all
+  #Выполнять действия от root-пользователя
+  become: yes
+  tasks:
+  #Установка текстового редактора Vim и chrony
+  - name: install softs on Almalinux
+    yum:
+      name:
+        - vim
+        - chrony
+      state: present
+      update_cache: true
+  
+  # Запускам и добавляем firewall
+  - name: start firewalld
+    service:
+      name: firewalld
+      state: started
+      enabled: true
+    tags:
+      - firewall_conf
+
+  #Установка временной зоны Европа/Москва    
+  - name: Set up timezone
+    timezone:
+      name: "Asia/Bishkek"
+  
+  #Запуск службы Chrony, добавление её в автозагрузку
+  - name: enable chrony
+    service:
+      name: chronyd
+      state: restarted
+      enabled: true
+  
+  #Копирование файла /etc/hosts c правами root:root 0644
+  - name: change /etc/hosts
+    template:
+      src: hosts.j2
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: 0644
+  
+- name: Base set up
+  hosts: clients
+  #Выполнять действия от root-пользователя
+  become: yes
+  #Установка клиента Freeipa
+  tasks:
+  - name: install module ipa-client
+    yum:
+      name:
+        - freeipa-client
+      state: present
+      update_cache: true
+  
+  #Запуск скрипта добавления хоста к серверу
+  - name: add host to ipa-server
+    shell: echo -e "yes\nyes" | ipa-client-install --mkhomedir --domain=OTUS.LAN --server=ipa.otus.lan --no-ntp -p admin -w vagrant_123
+
+- name: Base set up
+  hosts: servers
+  become: yes
+  tasks:
+  - name: install packages ipa-server
+    yum:
+      name:
+        - ipa-server
+      state: present
+      update_cache: true
+  
+  - name: create ipa-server
+    shell: echo -e "n\ny\n" | ipa-server-install --mkhomedir -r OTUS.LAN -n otus.lan --hostname=ipa.otus.lan --admin-password=vagrant_123 --ds-password=vagrant_123 --netbios-name=OTUS --no-ntp
+
+  - name: create user
+    shell: echo -e "password\npassword\n" | ipa user-add otus-user --first=Otus --last=User --password
+
+ # Добавляем freeipa-ldap в файрволл
+  - name: add freeipa-ldap service
+    ansible.posix.firewalld:
+      service: freeipa-ldap
+      permanent: true
+      state: enabled
+    tags:
+      - firewall_conf
+
+ # Добавляем freeipa-ldaps в файрволл
+  - name: add freeipa-ldaps service
+    ansible.posix.firewalld:
+      service: freeipa-ldaps
+      permanent: true
+      state: enabled
+    tags:
+      - firewall_conf

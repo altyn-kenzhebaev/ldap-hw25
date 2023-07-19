@@ -1,0 +1,14 @@
+clients:
+  hosts:
+    client1: 
+      ansible_host: 192.168.50.11
+      ansible_private_key_file: /home/altynbek/Otus-homeworks/ldap-hw25/.vagrant/machines/client1/virtualbox/private_key
+    client2:
+      ansible_host: 192.168.50.12
+      ansible_private_key_file: /home/altynbek/Otus-homeworks/ldap-hw25/.vagrant/machines/client2/virtualbox/private_key
+
+servers:
+  hosts:
+    ipa: 
+      ansible_host: 192.168.50.10
+      ansible_private_key_file: /home/altynbek/Otus-homeworks/ldap-hw25/.vagrant/machines/ipa/virtualbox/private_key
